@@ -3,7 +3,7 @@ import yt_dlp
 class Ydl_Downloader:
     def __init__(self):
         self.ydl_opts = {
-            'progress_hooks': [self.__on_progress],
+            # 'progress_hooks': [self.__on_progress],
             'postprocessors': [],
             'ignoreerrors': True,
             'quiet': True
@@ -14,7 +14,6 @@ class Ydl_Downloader:
     def __on_progress(self, d):
         if d['status'] == 'downloading':
             progress_str = f"Baixando: {d['_percent_str']} de {d['_total_bytes_str']} a {d['_speed_str']}"
-            print(progress_str)
             if self.progress_callback:
                 self.progress_callback(d)
 
@@ -29,16 +28,31 @@ class Ydl_Downloader:
         self._recipient = recipient
 
     def set_progress_callback(self, callback):
-        self.progress_callback = callback
+        self.ydl_opts.update({
+            'progress_hooks': [callback],
+        })
 
-    def get_playlist_info(self, url):
+    def get_url_info(self, url):
         opts = {**self.ydl_opts, 'extract_flat': True}
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
-                info = ydl.extract_info(url, download=False)
-                return len(info['entries']) if 'entries' in info else 1
+                data = ydl.extract_info(url, download=False)
+
+                if 'entries' not in data.keys():
+                    return [{
+                        "name": data['title'],
+                        "url": data['url']
+                    }]
+                
+                formatted_data = []
+                for entry in data['entries']:
+                    formatted_data.append({
+                        "name": entry['title'],
+                        "url": entry['url']
+                    })
+                return formatted_data
         except Exception:
-            return 1
+            return None
 
     def download_video(self, url):
         self.ydl_opts.update({
