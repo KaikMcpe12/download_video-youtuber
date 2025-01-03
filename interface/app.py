@@ -1,7 +1,7 @@
 import tkinter
 import tkinter.simpledialog
 import customtkinter
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from pathlib import Path
 import sys
 sys.path.append(str(Path(__file__).parent.parent))
@@ -147,6 +147,7 @@ class YouTubeDownloader(customtkinter.CTk):
                 print('e1')
                 pass
         elif d['status'] == 'finished':
+            messagebox.showinfo("Download Completo", "O download foi concluído com sucesso!")
             self.current_video += 1
             self.progress_bar.set(1)
             self.status_label.configure(text="Download Completo!")
@@ -167,11 +168,18 @@ class YouTubeDownloader(customtkinter.CTk):
 
         url = self.url_entry.get()
         if not url:
-            self.status_label.configure(text="Por favor, insira uma URL")
+            messagebox.showwarning("Atenção", "Por favor, insira uma URL válida.")
             return
 
         self.downloader.recipient = self.path_entry.get()
-        self.info_url = self.downloader.get_url_info(url)
+
+        try:
+            self.info_url = self.downloader.get_url_info(url)
+        except Exception as e:
+            messagebox.showerror("Erro ao Obter Informações", f"Não foi possível obter informações da URL:\n{str(e)}")
+            self.download_button.configure(state='enabled')
+            return
+        
         self.total_videos = len(self.info_url)
         self.current_video = 1
 
@@ -203,7 +211,7 @@ class YouTubeDownloader(customtkinter.CTk):
 
             self.status_label.configure(text=result)
         except Exception as e:
-            print('e2')
+            messagebox.showerror("Erro no Download", f"Um erro ocorreu durante o download:\n{str(e)}")
             self.status_label.configure(text=f"Erro: {str(e)}")
             self.progress_bar.set(0)
 
@@ -213,7 +221,7 @@ class YouTubeDownloader(customtkinter.CTk):
 
     def __download_audio(self, urls):
         for url in urls:
-            self.downloader.download_video(url)
+            self.downloader.download_audio(url)
 
     def __save_info_url(self, info_url):
         for video in info_url:

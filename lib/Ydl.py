@@ -57,10 +57,10 @@ class Ydl_Downloader:
 
     def download(self, url, format_type):
         timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        
+
         opts = self.ydl_opts.copy()
         opts.update({
-            'format': 'bestvideo+bestaudio/best' if format_type == 'video' else 'bestaudio/best',
+            'format': 'best' if format_type == 'video' else 'bestaudio/best',
             'outtmpl': f"{self.recipient}/%(title)s_{timestamp}.%(ext)s"
         })
         if format_type == 'audio':
@@ -82,6 +82,3 @@ class Ydl_Downloader:
 
     def download_audio(self, url):
         return self.download(url, 'audio')
-
-ydl = Ydl_Downloader()
-print(ydl.get_url_info('https://youtube.com/playlist?list=PLzJBqmiwm2cQOxVsqN_NCEc71Sv1vUNZv&feature=shared'))
