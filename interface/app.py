@@ -15,7 +15,6 @@ class YouTubeDownloader(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         self.downloader = Ydl_Downloader()
-        self.downloader.set_progress_callback(self.update_progress)
         self.current_video = 0
         self.total_videos = 0
         self.list_videos = []
@@ -82,12 +81,11 @@ class YouTubeDownloader(customtkinter.CTk):
         self.progress_bar.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
         self.progress_bar.set(0)
 
-        self.status_label = customtkinter.CTkLabel(self.progress_frame, text="Pronto", font=("Arial", 14))
+        self.status_label = customtkinter.CTkLabel(self.progress_frame, text="Preparado para baixar", font=("Arial", 14))
         self.status_label.grid(row=2, column=0, padx=10, pady=5)
 
-    def abrir_dialogo(self): 
-        dialogo = Dialogo(self) 
-        self.wait_window(dialogo)
+        self.details_button = customtkinter.CTkButton(self.progress_frame, text="Detalhes dos Downloads", command=self.open_details_window)
+        self.details_button.grid(row=6, column=0, padx=20, pady=10, sticky="ew")
 
     def browse_path(self):
         directory = filedialog.askdirectory()
@@ -96,12 +94,45 @@ class YouTubeDownloader(customtkinter.CTk):
             self.path_entry.insert(0, directory)
             self.downloader.recipient = directory
 
+    def open_details_window(self):
+        # toplevel
+        self.details_window = customtkinter.CTkToplevel(self)
+        self.details_window.title("Detalhes dos Downloads")
+        self.details_window.geometry("600x400")
+
+        self.details_label = customtkinter.CTkLabel(self.details_window, text="Downloads Detalhados", font=("Arial", 18, "bold"))
+        self.details_label.pack(pady=10)
+
+        # bg toplevel
+        background_color = self.details_window.cget("bg")
+
+        # listbox
+        self.download_list = tkinter.Listbox(self.details_window, font=("Arial", 14), bg=background_color, highlightthickness=0, borderwidth=0)
+        self.download_list.pack(expand=True, fill="both", padx=10, pady=10)
+
+        # update list
+        self.update_download_list()
+    
+    def update_download_list(self):
+        # clear list
+        if hasattr(self, 'download_list'):
+            self.download_list.delete(0, tkinter.END)
+
+            # added itens
+            for video in self.list_videos:
+                status = "Concluído" if video["status"] else "Em progresso"
+                self.download_list.insert(tkinter.END, f"{video['name']} - {status}")
+
     def update_progress(self, d):
         if d['status'] == 'downloading':
             try:
                 progress = float(re.sub(r'\x1b\[[0-9;]*m', '', d['_percent_str']).replace('%', '')) / 100
                 speed = re.sub(r'\x1b\[[0-9;]*m', '', d['_speed_str'])
                 self.progress_bar.set(progress)
+
+                # update status list
+                # self.list_videos[self.current_video - 1]["status"] = False
+                # self.update_download_list()
                 
                 if self.total_videos > 1:
                     self.playlist_label.configure(
@@ -109,15 +140,21 @@ class YouTubeDownloader(customtkinter.CTk):
                     )
                 
                 self.status_label.configure(
-                    text=f"Baixando: {progress*100}% a {speed}."
+                    text=f"Baixando: {progress*100:.1f}% a {speed}."
                 )
                 self.update_idletasks()
             except Exception:
+                print('e1')
                 pass
         elif d['status'] == 'finished':
             self.current_video += 1
             self.progress_bar.set(1)
             self.status_label.configure(text="Download Completo!")
+            self.download_button.configure(state='enabled')
+ 
+            # update status list to finished
+            # self.list_videos[self.current_video - 2]["status"] = True
+            # self.update_download_list()
 
     def switch_changed(self):
         if self.switch.get() == 1:
@@ -126,6 +163,8 @@ class YouTubeDownloader(customtkinter.CTk):
             self.switch.configure(text="Vídeo")
 
     def start_download(self):
+        self.download_button.configure(state='disabled')
+
         url = self.url_entry.get()
         if not url:
             self.status_label.configure(text="Por favor, insira uma URL")
@@ -140,10 +179,16 @@ class YouTubeDownloader(customtkinter.CTk):
             self.status_label.configure(text="Nenhum vídeo encontrado")
             return
 
-        self.playlist_label.configure(
-            text=f"Preparando para baixar {self.total_videos} vídeos"
-        )
-        self.download_button.configure(state='disabled')
+        if self.total_videos == 1:
+            self.playlist_label.configure(
+                text=f"{self.info_url[0]['name']}"
+            )
+            self.downloader.set_progress_callback(self.update_progress)
+        else:
+            self.playlist_label.configure(
+                text=f"Preparando para baixar {self.total_videos} vídeos"
+            )
+            self.downloader.set_progress_callback(self.update_progress)
 
         # started thread
         thread = threading.Thread(target=self._perform_download, daemon=True)
@@ -158,6 +203,7 @@ class YouTubeDownloader(customtkinter.CTk):
 
             self.status_label.configure(text=result)
         except Exception as e:
+            print('e2')
             self.status_label.configure(text=f"Erro: {str(e)}")
             self.progress_bar.set(0)
 
@@ -178,19 +224,6 @@ class YouTubeDownloader(customtkinter.CTk):
                     "status": False
                 }
             )
-
-class Dialogo(customtkinter.CTkToplevel):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.geometry("300x200")
-        self.title("Diálogo")
-
-        label = customtkinter.CTkLabel(self, text="Este é um diálogo")
-        label.pack(pady=20)
-
-        botao_fechar = customtkinter.CTkButton(self, text="Fechar", command=self.destroy)
-        botao_fechar.pack(pady=20)
-
 
 if __name__ == "__main__":
     app = YouTubeDownloader()

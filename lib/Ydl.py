@@ -1,4 +1,5 @@
 import yt_dlp
+import datetime
 
 class Ydl_Downloader:
     def __init__(self):
@@ -41,7 +42,7 @@ class Ydl_Downloader:
                 if 'entries' not in data.keys():
                     return [{
                         "name": data['title'],
-                        "url": data['url']
+                        "url": url
                     }]
                 
                 formatted_data = []
@@ -51,39 +52,36 @@ class Ydl_Downloader:
                         "url": entry['url']
                     })
                 return formatted_data
-        except Exception:
-            return None
+        except yt_dlp.utils.DownloadError as e:
+            return {"error": str(e)}
 
-    def download_video(self, url):
-        self.ydl_opts.update({
-            'format': 'bestvideo+bestaudio/best',
-            'outtmpl': f'{self.recipient}/%(title)s.%(ext)s'
-        })
-
-        try: 
-            with yt_dlp.YoutubeDL(self.ydl_opts) as ydl: 
-                info_dict = ydl.extract_info(url, download=True)
-                if info_dict.get('entries'):
-                    return "Download de playlist concluído"
-                return f"Download concluído: {info_dict['title']}"
-        except Exception as e:
-            return f"Erro ao baixar o vídeo: {str(e)}"
+    def download(self, url, format_type):
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         
-    def download_audio(self, url):
-        self.ydl_opts.update({
-            'format': 'bestaudio/best',
-            'outtmpl': f'{self.recipient}/%(title)s.%(ext)s',
-            'postprocessors': [{
+        opts = self.ydl_opts.copy()
+        opts.update({
+            'format': 'bestvideo+bestaudio/best' if format_type == 'video' else 'bestaudio/best',
+            'outtmpl': f"{self.recipient}/%(title)s_{timestamp}.%(ext)s"
+        })
+        if format_type == 'audio':
+            opts['postprocessors'] = [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
             }]
-        })
-
-        try: 
-            with yt_dlp.YoutubeDL(self.ydl_opts) as ydl: 
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
                 info_dict = ydl.extract_info(url, download=True)
                 if info_dict.get('entries'):
                     return "Download de playlist concluído"
                 return f"Download concluído: {info_dict['title']}"
-        except Exception as e:
-            return f"Erro ao baixar o audio: {str(e)}"
+        except yt_dlp.utils.DownloadError as e:
+            return f"Erro ao baixar o {format_type}: {str(e)}"
+
+    def download_video(self, url):
+        return self.download(url, 'video')
+
+    def download_audio(self, url):
+        return self.download(url, 'audio')
+
+ydl = Ydl_Downloader()
+print(ydl.get_url_info('https://youtube.com/playlist?list=PLzJBqmiwm2cQOxVsqN_NCEc71Sv1vUNZv&feature=shared'))
