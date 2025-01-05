@@ -107,7 +107,7 @@ class YouTubeDownloader(customtkinter.CTk):
         background_color = self.details_window.cget("bg")
 
         # listbox
-        self.download_list = tkinter.Listbox(self.details_window, font=("Arial", 14), bg=background_color, highlightthickness=0, borderwidth=0)
+        self.download_list = tkinter.Listbox(self.details_window, font=("Arial", 14), bg=background_color, highlightthickness=0, borderwidth=0, fg='white')
         self.download_list.pack(expand=True, fill="both", padx=10, pady=10)
 
         # update list
@@ -129,10 +129,6 @@ class YouTubeDownloader(customtkinter.CTk):
                 progress = float(re.sub(r'\x1b\[[0-9;]*m', '', d['_percent_str']).replace('%', '')) / 100
                 speed = re.sub(r'\x1b\[[0-9;]*m', '', d['_speed_str'])
                 self.progress_bar.set(progress)
-
-                # update status list
-                # self.list_videos[self.current_video - 1]["status"] = False
-                # self.update_download_list()
                 
                 if self.total_videos > 1:
                     self.playlist_label.configure(
@@ -143,19 +139,18 @@ class YouTubeDownloader(customtkinter.CTk):
                     text=f"Baixando: {progress*100:.1f}% a {speed}."
                 )
                 self.update_idletasks()
-            except Exception:
-                print('e1')
-                pass
+            except Exception as e:
+                messagebox.showerror("Erro de atualização", f"Um erro ocorreu durante a atualização da lista de download:\n{str(e)}")
         elif d['status'] == 'finished':
-            messagebox.showinfo("Download Completo", "O download foi concluído com sucesso!")
+            messagebox.showinfo("Download Completo", "O download foi concluído com sucesso!") if self.current_video == self.total_videos else None
             self.current_video += 1
             self.progress_bar.set(1)
             self.status_label.configure(text="Download Completo!")
             self.download_button.configure(state='enabled')
  
             # update status list to finished
-            # self.list_videos[self.current_video - 2]["status"] = True
-            # self.update_download_list()
+            self.list_videos[self.current_video - 2]["status"] = True
+            self.update_download_list()
 
     def switch_changed(self):
         if self.switch.get() == 1:
@@ -205,8 +200,10 @@ class YouTubeDownloader(customtkinter.CTk):
     def _perform_download(self):
         try:
             if self.switch.get() == 1:
+                self.__save_info_url(self.info_url, 'mp3')   
                 result = self.__download_audio([url['url'] for url in self.info_url])
             else:
+                self.__save_info_url(self.info_url, 'mp4')
                 result = self.__download_video([url['url'] for url in self.info_url])
 
             self.status_label.configure(text=result)
@@ -223,11 +220,11 @@ class YouTubeDownloader(customtkinter.CTk):
         for url in urls:
             self.downloader.download_audio(url)
 
-    def __save_info_url(self, info_url):
+    def __save_info_url(self, info_url, type_url):
         for video in info_url:
             self.list_videos.append(
                 {
-                    "name": video['name'],
+                    "name": f"{video['name']}.{type_url}",
                     "url": video['url'],
                     "status": False
                 }
