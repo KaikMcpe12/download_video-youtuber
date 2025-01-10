@@ -1,22 +1,16 @@
 import yt_dlp
 import datetime
+from pydub import AudioSegment
 
 class Ydl_Downloader:
-    def __init__(self):
+    def __init__(self):        
         self.ydl_opts = {
-            # 'progress_hooks': [self.__on_progress],
             'postprocessors': [],
             'ignoreerrors': True,
             'quiet': True
         }
         self._recipient = './'
         self.progress_callback = None
-
-    def __on_progress(self, d):
-        if d['status'] == 'downloading':
-            progress_str = f"Baixando: {d['_percent_str']} de {d['_total_bytes_str']} a {d['_speed_str']}"
-            if self.progress_callback:
-                self.progress_callback(d)
 
     @property
     def recipient(self): 
@@ -60,7 +54,7 @@ class Ydl_Downloader:
 
         opts = self.ydl_opts.copy()
         opts.update({
-            'format': 'best' if format_type == 'video' else 'bestaudio/best',
+            'format': 'bestvideo+bestaudio/best' if format_type == 'video' else 'bestaudio/best',
             'outtmpl': f"{self.recipient}/%(title)s_{timestamp}.%(ext)s"
         })
         if format_type == 'audio':
@@ -68,6 +62,9 @@ class Ydl_Downloader:
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
             }]
+        else:
+            opts['merge_output_format'] = 'mp4'
+        
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
                 info_dict = ydl.extract_info(url, download=True)
@@ -82,3 +79,4 @@ class Ydl_Downloader:
 
     def download_audio(self, url):
         return self.download(url, 'audio')
+    
