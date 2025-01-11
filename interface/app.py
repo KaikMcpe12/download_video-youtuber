@@ -29,8 +29,13 @@ class YouTubeDownloader(customtkinter.CTk):
                         rowheight=25, 
                         fieldbackground="#2c2c2c",
                         font=("Arial", 12))
-        style.map("Treeview", background=[("selected", "#3a9bfd")])
-        style.configure("Treeview.Heading", font=("Arial", 14, "bold"), foreground="white", background="#1a1a1a")
+        style.configure("Treeview.Heading", 
+                       font=("Arial", 11, "bold"), 
+                       foreground="white", 
+                       background="#1a1a1a")
+        style.map("Treeview.Heading",
+                 background=[("active", "#1a1a1a")],
+                 foreground=[("active", "white")])
 
     def setup_ui(self):
         self.title("YouTube Downloader")
@@ -55,6 +60,16 @@ class YouTubeDownloader(customtkinter.CTk):
         )
         self.appearance_mode_optionmenu.grid(row=5, column=0, padx=20, pady=10)
 
+        self.credits_label = customtkinter.CTkLabel(
+            self.sidebar_frame, text="Projeto criado por", font=("Arial", 12)
+        )
+        self.credits_label.grid(row=6, column=0, padx=20, pady=(10, 0), sticky="s")
+
+        self.author_label = customtkinter.CTkLabel(
+            self.sidebar_frame, text="KaikMcpe12", font=("Arial", 12, "bold")
+        )
+        self.author_label.grid(row=7, column=0, padx=20, pady=(0, 20), sticky="s")
+
         # URL frame
         self.url_frame = customtkinter.CTkFrame(self, corner_radius=10)
         self.url_frame.grid(row=0, column=1, padx=20, pady=(20, 10), sticky="ew")
@@ -67,6 +82,11 @@ class YouTubeDownloader(customtkinter.CTk):
 
         self.url_entry = customtkinter.CTkEntry(self.url_frame, placeholder_text="Cole o link aqui")
         self.url_entry.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+
+        # trace variable
+        self.url_var = customtkinter.StringVar()
+        self.url_entry.configure(textvariable=self.url_var)
+        self.url_var.trace_add("write", self.on_url_change)
 
         # directory
         self.path_frame = customtkinter.CTkFrame(self, corner_radius=10)
@@ -164,6 +184,24 @@ class YouTubeDownloader(customtkinter.CTk):
         
         # bind click event
         self.tree.bind('<Button-1>', self.handle_click)
+    
+    def on_url_change(self, *args):
+        # show verify button
+        self.verify_button.grid()
+        self.download_button.grid_remove()
+        
+        # clear tree
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+        
+        # reset labels and progress
+        self.playlist_label.configure(text="")
+        self.status_label.configure(text="Preparado para baixar")
+        self.progress_bar.set(0)
+        
+        # clear lists
+        self.list_videos.clear()
+        self.selected_videos.clear()
 
     def handle_click(self, event):
         region = self.tree.identify("region", event.x, event.y)
@@ -218,7 +256,7 @@ class YouTubeDownloader(customtkinter.CTk):
                 self.selected_videos.discard(idx)
 
     def verify_url(self):
-        url = self.url_entry.get()
+        url = self.url_var.get()
         if not url:
             tkinter.messagebox.showwarning("Atenção", "Por favor, insira uma URL válida.")
             return
@@ -229,34 +267,16 @@ class YouTubeDownloader(customtkinter.CTk):
             tkinter.messagebox.showerror("Erro ao Obter Informações", f"Não foi possível obter informações da URL:\n{str(e)}")
             return
 
-        # clear previous items
-        for item in self.tree.get_children():
-            self.tree.delete(item)
-        self.list_videos.clear()
-        self.selected_videos.clear()
+        self.reset_interface()
+        self.populate_tree(self.info_url)
 
-        # add videos to tree
-        for idx, video in enumerate(self.info_url):
-            video_data = {
-                "name": video['name'],
-                "url": video["url"],
-                "progress": "0%",
-                "status": "Pendente"
-            }
-            self.list_videos.append(video_data)
-            self.tree.insert("", "end", values=('☒', video_data["name"], video_data["progress"], video_data["status"]))
-            self.selected_videos.add(idx)
-
-        # show download button
         self.verify_button.grid_remove()
         self.download_button.grid()
-        
-        # update status
-        self.total_videos = len(self.info_url)
-        if self.total_videos == 1:
-            self.playlist_label.configure(text=f"1 vídeo encontrado")
-        else:
-            self.playlist_label.configure(text=f"{self.total_videos} vídeos encontrados")
+
+        total_videos = len(self.info_url)
+        self.playlist_label.configure(
+            text=f"{total_videos} vídeo{'s' if total_videos > 1 else ''} encontrado{'s' if total_videos > 1 else ''}"
+        )
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
@@ -293,7 +313,7 @@ class YouTubeDownloader(customtkinter.CTk):
             self.tree.item(self.tree.get_children()[self.current_video - 1], values=values)
 
     def start_download(self):
-        url = self.url_entry.get()
+        url = self.url_var.get()
         if not url:
             tkinter.messagebox.showwarning("Atenção", "Por favor, insira uma URL válida.")
             return
@@ -360,7 +380,7 @@ class YouTubeDownloader(customtkinter.CTk):
                 self.progress_bar.set(progress)
                 self.status_label.configure(text=f"Baixando {self.current_video}/{self.total_videos}: {title}")
             
-            # enable donload button
+            # enable download button
             self.download_button.configure(state='normal')
             self.verify_button.grid()
             self.download_button.grid_remove()
