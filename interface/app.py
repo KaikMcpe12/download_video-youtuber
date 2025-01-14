@@ -211,7 +211,7 @@ class YouTubeDownloader(customtkinter.CTk):
         item = self.tree.identify('item', event.x, event.y)
         if not item:
             return
-            
+        
         column = self.tree.identify('column', event.x, event.y)
         if column == '#1':
             current_values = self.tree.item(item)['values']
@@ -267,8 +267,22 @@ class YouTubeDownloader(customtkinter.CTk):
             tkinter.messagebox.showerror("Erro ao Obter Informações", f"Não foi possível obter informações da URL:\n{str(e)}")
             return
 
-        self.reset_interface()
-        self.populate_tree(self.info_url)
+        # clear previous items
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+        self.list_videos.clear()
+        self.selected_videos.clear()
+        # add videos to tree
+        for idx, video in enumerate(self.info_url):
+            video_data = {
+                "name": video['name'],
+                "url": video["url"],
+                "progress": "0%",
+                "status": "Pendente"
+            }
+            self.list_videos.append(video_data)
+            self.tree.insert("", "end", values=('☒', video_data["name"], video_data["progress"], video_data["status"]))
+            self.selected_videos.add(idx)
 
         self.verify_button.grid_remove()
         self.download_button.grid()
