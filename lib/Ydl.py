@@ -72,7 +72,7 @@ class Ydl_Downloader:
                     return "Download de playlist concluído"
                 return f"Download concluído: {info_dict['title']}"
         except yt_dlp.utils.DownloadError as e:
-            return f"Erro ao baixar o {format_type}: {str(e)}"
+            raise ValueError(f"Erro ao baixar o {format_type}: {str(e)}")
 
     def download_video(self, url):
         return self.download(url, 'video')

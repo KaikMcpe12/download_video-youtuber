@@ -44,9 +44,10 @@ class YouTubeDownloader(customtkinter.CTk):
         # sidebar
         self.sidebar_frame = customtkinter.CTkFrame(self, width=200, corner_radius=10)
         self.sidebar_frame.grid(row=0, column=0, rowspan=7, sticky="ns", padx=10, pady=10)
+        self.sidebar_frame.grid_rowconfigure(999, weight=1)
 
         self.logo_label = customtkinter.CTkLabel(
-            self.sidebar_frame, text="Downloader", font=("Arial", 24, "bold"), text_color="#3a9bfd"
+            self.sidebar_frame, text="Downloader Youtuber", font=("Arial", 24, "bold"), text_color="#3a9bfd", wraplength=200
         )
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="n")
 
@@ -61,14 +62,14 @@ class YouTubeDownloader(customtkinter.CTk):
         self.appearance_mode_optionmenu.grid(row=5, column=0, padx=20, pady=10)
 
         self.credits_label = customtkinter.CTkLabel(
-            self.sidebar_frame, text="Projeto criado por", font=("Arial", 12)
+            self.sidebar_frame, text="Projeto criado por", font=("Arial", 14)
         )
-        self.credits_label.grid(row=6, column=0, padx=20, pady=(10, 0), sticky="s")
+        self.credits_label.grid(row=999, column=0, padx=20, pady=(10, 0), sticky="s")
 
         self.author_label = customtkinter.CTkLabel(
-            self.sidebar_frame, text="KaikMcpe12", font=("Arial", 12, "bold")
+            self.sidebar_frame, text="KaikMcpe12", font=("Arial", 14, "bold")
         )
-        self.author_label.grid(row=7, column=0, padx=20, pady=(0, 20), sticky="s")
+        self.author_label.grid(row=1000, column=0, padx=20, pady=(0, 20), sticky="s")
 
         # URL frame
         self.url_frame = customtkinter.CTkFrame(self, corner_radius=10)
@@ -119,7 +120,7 @@ class YouTubeDownloader(customtkinter.CTk):
 
         # verify URL button
         self.verify_button = customtkinter.CTkButton(
-            self, text="Verificar URL", font=("Arial", 18), command=self.verify_url
+            self, text="Verificar URL", font=("Arial", 18), command=lambda: threading.Thread(target=self.verify_url, daemon=True).start()
         )
         self.verify_button.grid(row=3, column=1, padx=20, pady=20, sticky="ew")
 
@@ -211,7 +212,7 @@ class YouTubeDownloader(customtkinter.CTk):
         item = self.tree.identify('item', event.x, event.y)
         if not item:
             return
-        
+
         column = self.tree.identify('column', event.x, event.y)
         if column == '#1':
             current_values = self.tree.item(item)['values']
@@ -257,6 +258,9 @@ class YouTubeDownloader(customtkinter.CTk):
 
     def verify_url(self):
         url = self.url_var.get()
+
+        #disabled verify button
+        self.verify_button.configure(state='disabled')
         if not url:
             tkinter.messagebox.showwarning("Atenção", "Por favor, insira uma URL válida.")
             return
@@ -266,6 +270,9 @@ class YouTubeDownloader(customtkinter.CTk):
         except Exception as e:
             tkinter.messagebox.showerror("Erro ao Obter Informações", f"Não foi possível obter informações da URL:\n{str(e)}")
             return
+
+        # enable verify button
+        self.verify_button.configure(state='normal')
 
         # clear previous items
         for item in self.tree.get_children():
@@ -402,8 +409,9 @@ class YouTubeDownloader(customtkinter.CTk):
             self.progress_bar.set(0)
             
         except Exception as e:
-            tkinter.messagebox.showerror("Erro no Download", f"Um erro ocorreu durante o download:\n{str(e)}")
+            tkinter.messagebox.showerror("Erro no Download", f"Um erro ocorreu durante o download, tente um link diferente ou verifique sua internet:\n{str(e)}")
             self.progress_bar.set(0)
+
             # enable donload button
             self.download_button.configure(state='normal')
             self.verify_button.grid()
