@@ -259,13 +259,13 @@ class YouTubeDownloader(customtkinter.CTk):
     def verify_url(self):
         url = self.url_var.get()
 
-        #disabled verify button
-        self.verify_button.configure(state='disabled')
         if not url:
             tkinter.messagebox.showwarning("Atenção", "Por favor, insira uma URL válida.")
             return
 
         try:
+            #disabled verify button
+            self.verify_button.configure(state='disabled')
             self.info_url = self.downloader.get_url_info(url)
         except Exception as e:
             tkinter.messagebox.showerror("Erro ao Obter Informações", f"Não foi possível obter informações da URL:\n{str(e)}")

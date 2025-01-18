@@ -7,7 +7,8 @@ class Ydl_Downloader:
         self.ydl_opts = {
             'postprocessors': [],
             'ignoreerrors': True,
-            'quiet': True
+            'quiet': True,
+            # 'extractor-args': "youtube:player_client=default,-web_creator"
         }
         self._recipient = './'
         self.progress_callback = None
@@ -80,3 +81,8 @@ class Ydl_Downloader:
     def download_audio(self, url):
         return self.download(url, 'audio')
     
+yt = Ydl_Downloader()
+
+# print(yt.get_url_info('https://www.youtube.com/live/rp_dWDmLA2A'))
+yt.download_video('https://www.youtube.com/live/rp_dWDmLA2A')
+
