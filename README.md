@@ -5,9 +5,8 @@
 ![GitHub forks](https://img.shields.io/github/forks/kaikmcpe12/download_video-youtuber?style=for-the-badge)
 ![Bitbucket open issues](https://img.shields.io/bitbucket/issues/kaikmcpe12/download_video-youtuber?style=for-the-badge)
 ![Bitbucket open pull requests](https://img.shields.io/bitbucket/pr-raw/kaikmcpe12/download_video-youtuber?style=for-the-badge)
-![License](https://img.shields.io/static/v1?label=license&message=MIT&color=49AA26&labelColor=000000)
 
-<img src="./assets/readme/image.png" alt="Exemplo imagem">
+<img src="./assets/readme/image.png" alt="imagem do projeto">
 
 > Software de download de video do youtube em formato MP4 ou MP3.
 
@@ -49,13 +48,13 @@ Você pode modificar o quanto quiser, mudando o caminho que será baixado, adici
 
 ## 🤝 Colaboradores
 
-Agradecemos às seguintes pessoas que contribuíram para este projeto:
+Contribuidores para a criação do projeto:
 
 <table>
   <tr>
     <td align="center">
       <a href="#" title="defina o título do link">
-        <img src="https://avatars3.githubusercontent.com/u/119709479" width="100px;" alt="Foto do Iuri Silva no GitHub"/><br>
+        <img src="https://avatars3.githubusercontent.com/u/119709479" width="100px;" alt="foto do KaikMcpe12 do Github"/><br>
         <sub>
           <b>KaikMcpe12</b>
         </sub>
@@ -66,4 +65,4 @@ Agradecemos às seguintes pessoas que contribuíram para este projeto:
 
 ## 📝 Licença
 
-Esse projeto está sob licença MIT.
+Esse projeto está sob licença <img src='https://img.shields.io/static/v1?label=license&message=MIT&color=49AA26&labelColor=000000' align="center">
