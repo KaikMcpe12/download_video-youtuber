@@ -8,7 +8,7 @@ class Ydl_Downloader:
             'postprocessors': [],
             'ignoreerrors': True,
             'quiet': True,
-            # 'extractor-args': "youtube:player_client=default,-web_creator"
+            # 'extractor-args': "youtube:player_client=default,-web_creator" # possivel
         }
         self._recipient = './'
         self.progress_callback = None
@@ -55,7 +55,7 @@ class Ydl_Downloader:
 
         opts = self.ydl_opts.copy()
         opts.update({
-            'format': 'bestvideo+bestaudio/best' if format_type == 'video' else 'bestaudio/best',
+            'format': 'bestvideo/best' if format_type == 'video' else 'bestaudio/best',
             'outtmpl': f"{self.recipient}/%(title)s_{timestamp}.%(ext)s"
         })
         if format_type == 'audio':
@@ -63,8 +63,8 @@ class Ydl_Downloader:
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
             }]
-        else:
-            opts['merge_output_format'] = 'mp4'
+        # else:
+        #     opts['merge_output_format'] = 'mp4'
         
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
@@ -80,9 +80,3 @@ class Ydl_Downloader:
 
     def download_audio(self, url):
         return self.download(url, 'audio')
-    
-yt = Ydl_Downloader()
-
-# print(yt.get_url_info('https://www.youtube.com/live/rp_dWDmLA2A'))
-yt.download_video('https://www.youtube.com/live/rp_dWDmLA2A')
-

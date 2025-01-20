@@ -21,19 +21,19 @@ class YouTubeDownloader(customtkinter.CTk):
         self.setup_ui()
         self.selected_videos = set()
 
-        style = ttk.Style()
-        style.theme_use("default")
-        style.configure("Treeview", 
+        self.style = ttk.Style()
+        self.style.theme_use("default")
+        self.style.configure("Treeview", 
                         background="#2c2c2c", 
                         foreground="white", 
                         rowheight=25, 
                         fieldbackground="#2c2c2c",
                         font=("Arial", 12))
-        style.configure("Treeview.Heading", 
+        self.style.configure("Treeview.Heading", 
                        font=("Arial", 11, "bold"), 
                        foreground="white", 
                        background="#1a1a1a")
-        style.map("Treeview.Heading",
+        self.style.map("Treeview.Heading",
                  background=[("active", "#1a1a1a")],
                  foreground=[("active", "white")])
 
@@ -57,7 +57,7 @@ class YouTubeDownloader(customtkinter.CTk):
         self.appearance_mode_label.grid(row=4, column=0, padx=20, pady=(10, 0), sticky="w")
 
         self.appearance_mode_optionmenu = customtkinter.CTkOptionMenu(
-            self.sidebar_frame, values=["Light", "Dark", "System"], command=self.change_appearance_mode_event
+            self.sidebar_frame, values=["Dark", "Light", "System"], command=self.change_appearance_mode_event
         )
         self.appearance_mode_optionmenu.grid(row=5, column=0, padx=20, pady=10)
 
@@ -301,6 +301,20 @@ class YouTubeDownloader(customtkinter.CTk):
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
+
+        self.style.configure("Treeview", 
+                        background="#d3d3d3", 
+                        foreground="white", 
+                        rowheight=25, 
+                        fieldbackground="#d3d3d3",
+                        font=("Arial", 12))
+        self.style.configure("Treeview.Heading", 
+                       font=("Arial", 11, "bold"), 
+                       foreground="black", 
+                       background="#e5e5e5")
+        self.style.map("Treeview.Heading",
+                 background=[("active", "#e5e5e5")],
+                 foreground=[("active", "white")])
 
     def browse_path(self):
         directory = tkinter.filedialog.askdirectory()
