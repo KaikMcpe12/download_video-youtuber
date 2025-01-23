@@ -55,7 +55,7 @@ class Ydl_Downloader:
 
         opts = self.ydl_opts.copy()
         opts.update({
-            'format': 'bestvideo/best' if format_type == 'video' else 'bestaudio/best',
+            'format': 'bestvideo+bestaudio/best' if format_type == 'video' else 'bestaudio/best',
             'outtmpl': f"{self.recipient}/%(title)s_{timestamp}.%(ext)s"
         })
         if format_type == 'audio':
@@ -63,8 +63,8 @@ class Ydl_Downloader:
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
             }]
-        # else:
-        #     opts['merge_output_format'] = 'mp4'
+        else:
+            opts['merge_output_format'] = 'mp4'
         
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:

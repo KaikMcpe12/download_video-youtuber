@@ -270,9 +270,9 @@ class YouTubeDownloader(customtkinter.CTk):
         except Exception as e:
             tkinter.messagebox.showerror("Erro ao Obter Informações", f"Não foi possível obter informações da URL:\n{str(e)}")
             return
-
-        # enable verify button
-        self.verify_button.configure(state='normal')
+        finally:
+            # enable verify button
+            self.verify_button.configure(state='normal')
 
         # clear previous items
         for item in self.tree.get_children():
